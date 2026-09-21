@@ -14,7 +14,18 @@ import type { ChatEvent } from "@/lib/types";
 
 export const maxDuration = 120;
 
-const anthropic = new Anthropic();
+// Read the key explicitly per request rather than letting the SDK pick it up
+// from process.env at module load. A module-scope `new Anthropic()` captures
+// whatever the env held at cold start and only fails much later, deep inside
+// the stream, as "Could not resolve authentication method" — which reads like
+// an SDK bug rather than an unset variable. Vercel bakes env vars into a
+// deployment, so adding ANTHROPIC_API_KEY requires a redeploy of the
+// environment (Production/Preview) being hit.
+function anthropicClient(): Anthropic {
+  const apiKey = process.env.ANTHROPIC_API_KEY?.trim();
+  if (!apiKey) throw new Error("ANTHROPIC_API_KEY is not set in this deployment's environment.");
+  return new Anthropic({ apiKey });
+}
 
 // Best-effort per-IP throttle. In-memory, so it resets per serverless
 // instance — the hard backstop is Anthropic console spend alerts (HANDOFF.md).
@@ -70,6 +81,17 @@ export async function POST(request: Request) {
   }
   if (!incoming) {
     return Response.json({ error: "Invalid conversation payload." }, { status: 400 });
+  }
+
+  let anthropic: Anthropic;
+  try {
+    anthropic = anthropicClient();
+  } catch (err) {
+    console.error("chat misconfigured:", err);
+    return Response.json(
+      { error: "The assistant isn't configured yet. (Server: ANTHROPIC_API_KEY is missing.)" },
+      { status: 500 },
+    );
   }
 
   const cookieStore = await cookies();
