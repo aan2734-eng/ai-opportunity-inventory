@@ -48,6 +48,9 @@ original workflow actions plus `listOpportunities` and `checkRoster`).
    | `ROSTER_SHEET_NAME` | usually `Form Responses 1` |
    | `OPPORTUNITIES_SPREADSHEET_ID` | ID of the "AI Opportunity Tracker Public View" sheet |
    | `OPPORTUNITIES_SHEET_NAME` | usually `Sheet1` |
+   | `WORDPRESS_SITE_URL` | WordPress site URL, without `/wp-json/...` |
+   | `WORDPRESS_USERNAME` | WordPress user permitted to create drafts |
+   | `WORDPRESS_APP_PASSWORD` | Application password generated in that user's WordPress profile |
 4. Deploy → New deployment → **Web app** → Execute as **Me**, access
    **Anyone**. Copy the `/exec` URL.
 
@@ -103,8 +106,8 @@ name/subdomain matters up front — it's painful to change later.
 1. **Roster check ≠ email ownership.** Anyone who knows a member's email can
    verify as them. Fine for a friendly academic community; if it becomes a
    problem, add a one-time email code (needs an email-sending service).
-2. **Editors work in the sheet.** Review submissions land on the Reviews tab
-   with AI rubric score + summary. A simple editor dashboard is a natural v2.
+2. **Review submissions create WordPress drafts.** The Reviews tab retains the
+   AI rubric score + summary and stores the WordPress edit URL in `draftLink`.
 3. **No notifications.** Students aren't emailed on triage/review decisions;
    an Apps Script `onEdit` mailer would close that loop cheaply.
 4. **AI-use disclosure.** When memos publish, include a standard line noting

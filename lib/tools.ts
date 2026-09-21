@@ -211,7 +211,10 @@ const TOOLS: WorkflowTool[] = [
         properties: {
           prospectId: { type: "string" },
           opportunityTitle: { type: "string" },
-          draftLink: { type: "string", description: "Google Doc or draft URL" },
+          memoContent: {
+            type: "string",
+            description: "Complete memo body as HTML for the WordPress draft. Preserve the student's analysis and section structure.",
+          },
           aiRubricScore: { type: "number", description: "Rubric score from 0 to 100" },
           aiSummaryForReviewer: {
             type: "string",
@@ -219,7 +222,7 @@ const TOOLS: WorkflowTool[] = [
               "Summary for the human reviewer: duplicate-check outcome, main legal/policy issues, weaknesses needing reviewer attention, recommended review status.",
           },
         },
-        required: ["prospectId", "opportunityTitle", "draftLink", "aiRubricScore", "aiSummaryForReviewer"],
+        required: ["prospectId", "opportunityTitle", "memoContent", "aiRubricScore", "aiSummaryForReviewer"],
         additionalProperties: false,
       },
     },
@@ -229,7 +232,7 @@ const TOOLS: WorkflowTool[] = [
         opportunityTitle: str(input, "opportunityTitle"),
         studentName: session!.name || session!.email,
         school: session!.school,
-        draftLink: str(input, "draftLink"),
+        memoContent: str(input, "memoContent"),
         aiRubricScore: num(input, "aiRubricScore"),
         aiSummaryForReviewer: str(input, "aiSummaryForReviewer"),
       });

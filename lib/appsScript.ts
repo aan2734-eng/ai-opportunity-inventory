@@ -117,7 +117,7 @@ export interface SubmitForHumanReviewParams {
   opportunityTitle: string;
   studentName: string;
   school: string;
-  draftLink: string;
+  memoContent: string;
   aiRubricScore: number;
   aiSummaryForReviewer: string;
 }
@@ -219,7 +219,13 @@ async function mockCall<T>(action: string, params: Record<string, unknown>): Pro
     }
     case "submitForHumanReview": {
       const reviewId = `R-${String(mockReviews.length + 1).padStart(4, "0")}`;
-      mockReviews.push({ reviewId, ...params, createdAt: new Date().toISOString(), humanReviewStatus: "Pending" });
+      mockReviews.push({
+        reviewId,
+        ...params,
+        draftLink: "https://wordpress.example.test/wp-admin/post.php?post=" + reviewId,
+        createdAt: new Date().toISOString(),
+        humanReviewStatus: "Pending",
+      });
       return { reviewId } as T;
     }
     default:

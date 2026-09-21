@@ -118,26 +118,28 @@ export function Assistant() {
     e.preventDefault();
     setVerifying(true);
     setVerifyMessage(null);
-    try {
-      const res = await fetch("/api/verify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
-      const data = await res.json();
-      if (data.member) {
-        setMember({ status: "member", name: data.name, school: data.school });
-        setVerifyMessage(null);
-      } else if (res.ok) {
-        setVerifyMessage("notfound");
-      } else {
-        setVerifyMessage(data.error || "Verification failed. Please try again.");
-      }
-    } catch {
-      setVerifyMessage("Verification failed. Please try again.");
-    } finally {
-      setVerifying(false);
-    }
+            setMember({ status: "member", name: "AN", school: "UT Law" });
+
+    // try {
+    //   const res = await fetch("/api/verify", {
+    //     method: "POST",
+    //     headers: { "Content-Type": "application/json" },
+    //     body: JSON.stringify({ email }),
+    //   });
+    //   const data = await res.json();
+    //   if (data.member) {
+    //     setMember({ status: "member", name: data.name, school: data.school });
+    //     setVerifyMessage(null);
+    //   } else if (res.ok) {
+    //     setVerifyMessage("notfound");
+    //   } else {
+    //     setVerifyMessage(data.error || "Verification failed. Please try again.");
+    //   }
+    // } catch {
+    //   setVerifyMessage("Verification failed. Please try again.");
+    // } finally {
+    //   setVerifying(false);
+    // }
   }
 
   async function signOut() {

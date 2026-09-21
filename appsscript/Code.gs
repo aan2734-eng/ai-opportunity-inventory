@@ -16,6 +16,9 @@
  *       ROSTER_SHEET_NAME      = <tab name, usually "Form Responses 1">
  *       OPPORTUNITIES_SPREADSHEET_ID = <ID of the public-view tracker sheet>
  *       OPPORTUNITIES_SHEET_NAME     = <tab name, usually "Sheet1">
+ *       WORDPRESS_SITE_URL            = <WordPress site URL, without /wp-json/...>
+ *       WORDPRESS_USERNAME            = <WordPress user with permission to create drafts>
+ *       WORDPRESS_APP_PASSWORD        = <WordPress application password>
  *  3. Ensure the workflow spreadsheet has tabs: Prospects, Assignments, Reviews
  *     (they are created automatically on first write if missing).
  *  4. Deploy → New deployment → Web app → Execute as: Me →
@@ -252,16 +255,53 @@ function createAssignment_(body) {
 function submitForHumanReview_(body) {
   var sheet = getOrCreateSheet_("Reviews", REVIEW_HEADERS);
   var reviewId = "R-" + pad_(sheet.getLastRow(), 4);
+  var wordpressDraft = createWordPressDraft_(body);
   appendRow_(sheet, REVIEW_HEADERS, {
     reviewId: reviewId,
     createdAt: new Date().toISOString(),
     prospectId: body.prospectId, opportunityTitle: body.opportunityTitle,
     studentName: body.studentName, school: body.school,
-    draftLink: body.draftLink, aiRubricScore: body.aiRubricScore,
+    draftLink: wordpressDraft.editLink, aiRubricScore: body.aiRubricScore,
     aiSummaryForReviewer: body.aiSummaryForReviewer,
     humanReviewStatus: "Pending",
   });
   return { reviewId: reviewId };
+}
+
+function createWordPressDraft_(body) {
+  var props = PropertiesService.getScriptProperties();
+  var siteUrl = String(props.getProperty("WORDPRESS_SITE_URL") || "").replace(/\/$/, "");
+  var username = props.getProperty("WORDPRESS_USERNAME");
+  var appPassword = props.getProperty("WORDPRESS_APP_PASSWORD");
+  if (!siteUrl || !username || !appPassword) {
+    throw new Error("WordPress is not configured: set WORDPRESS_SITE_URL, WORDPRESS_USERNAME, and WORDPRESS_APP_PASSWORD");
+  }
+  if (!String(body.memoContent || "").trim()) throw new Error("memoContent is required");
+
+  var response = UrlFetchApp.fetch(siteUrl + "/wp-json/wp/v2/posts", {
+    method: "post",
+    contentType: "application/json",
+    headers: {
+      Authorization: "Basic " + Utilities.base64Encode(username + ":" + appPassword),
+    },
+    payload: JSON.stringify({
+      title: String(body.opportunityTitle || "Untitled opportunity"),
+      content: String(body.memoContent),
+      status: "draft",
+    }),
+    muteHttpExceptions: true,
+  });
+  var status = response.getResponseCode();
+  var responseBody = response.getContentText();
+  if (status < 200 || status >= 300) {
+    throw new Error("WordPress draft creation failed (" + status + "): " + responseBody.slice(0, 500));
+  }
+
+  var post = JSON.parse(responseBody);
+  var editLink = post._links && post._links.edit && post._links.edit[0] && post._links.edit[0].href;
+  if (!editLink && post.link) editLink = post.link;
+  if (!editLink) throw new Error("WordPress draft response did not include an edit link");
+  return { id: post.id, editLink: editLink };
 }
 
 // ---------------------------------------------------------------------------
