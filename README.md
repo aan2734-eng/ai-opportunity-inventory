@@ -23,4 +23,5 @@ the security model. `appsscript/Code.gs` is the drop-in backend script.
 npm install
 echo "ANTHROPIC_API_KEY=sk-ant-..." > .env.local
 npm run dev   # runs against bundled sample data + mock roster (test@example.com)
+npm test      # Node's built-in runner; see HANDOFF.md §8
 ```
