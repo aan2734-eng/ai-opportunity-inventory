@@ -2,6 +2,7 @@ import type Anthropic from "@anthropic-ai/sdk";
 import type { Session } from "./types";
 import * as backend from "./appsScript";
 import { getOpportunities } from "./inventory";
+import { EVIDENTIARY_POSTURES } from "./systemPrompt";
 
 /**
  * Workflow tools for the assistant. Read tools are always registered; write
@@ -80,17 +81,34 @@ const TOOLS: WorkflowTool[] = [
     definition: {
       name: "create_prospect",
       description:
-        "Record a new AI opportunity prospect after the mandatory duplicate search. The student's name, school, and email are taken from their verified session automatically.",
+        "Record a new AI opportunity prospect after the mandatory duplicate search. The student's name, school, and email are taken from their verified session automatically. evidentiaryPosture records how far the opportunity has actually got — proposed and conceptual opportunities are in scope and are assessed on different evidence, not held to a lower bar.",
       input_schema: {
         type: "object" as const,
         properties: {
           opportunityTitle: { type: "string" },
           oneSentenceClaim: { type: "string" },
           domain: { type: "string" },
-          jurisdiction: { type: "string" },
+          jurisdiction: {
+            type: "string",
+            description:
+              "Jurisdiction. For a prospective opportunity this is the candidate jurisdiction the memo will reason about.",
+          },
+          evidentiaryPosture: {
+            type: "string",
+            enum: [...EVIDENTIARY_POSTURES],
+            description:
+              "How far the opportunity has got, in the tracker's Deployment Stage vocabulary. Declared by the student, confirmed or challenged at triage.",
+          },
           sourceLinks: { type: "string", description: "Source link or newline-separated links" },
         },
-        required: ["opportunityTitle", "oneSentenceClaim", "domain", "jurisdiction", "sourceLinks"],
+        required: [
+          "opportunityTitle",
+          "oneSentenceClaim",
+          "domain",
+          "jurisdiction",
+          "evidentiaryPosture",
+          "sourceLinks",
+        ],
         additionalProperties: false,
       },
     },
@@ -103,6 +121,7 @@ const TOOLS: WorkflowTool[] = [
         oneSentenceClaim: str(input, "oneSentenceClaim"),
         domain: str(input, "domain"),
         jurisdiction: str(input, "jurisdiction"),
+        evidentiaryPosture: str(input, "evidentiaryPosture"),
         sourceLinks: str(input, "sourceLinks"),
       });
       return JSON.stringify(result);
@@ -114,7 +133,7 @@ const TOOLS: WorkflowTool[] = [
     definition: {
       name: "update_prospect_status",
       description:
-        "Record the triage outcome for a prospect. Always include every field. Status must be one of: 'Approved for memo', 'Duplicate', 'Variant - revise direction', 'Needs more information', 'Rejected'.",
+        "Record the triage outcome for a prospect. Always include every field. Status must be one of: 'Approved for memo', 'Duplicate', 'Variant - revise direction', 'Needs more information', 'Rejected'. evidentiaryPosture is your confirmation of the student's declaration, or your corrected value if the draft's claims do not match what they declared.",
       input_schema: {
         type: "object" as const,
         properties: {
@@ -129,6 +148,11 @@ const TOOLS: WorkflowTool[] = [
               "Rejected",
             ],
           },
+          evidentiaryPosture: {
+            type: "string",
+            enum: [...EVIDENTIARY_POSTURES],
+            description: "Confirmed evidentiary posture for this prospect.",
+          },
           closestExistingMatches: { type: "string" },
           triageDecision: { type: "string", description: "Triage decision reasoning" },
           aiTriageConfidence: { type: "number", description: "Confidence from 0 to 1" },
@@ -139,6 +163,7 @@ const TOOLS: WorkflowTool[] = [
         required: [
           "prospectId",
           "status",
+          "evidentiaryPosture",
           "closestExistingMatches",
           "triageDecision",
           "aiTriageConfidence",
@@ -152,6 +177,7 @@ const TOOLS: WorkflowTool[] = [
       const result = await backend.updateProspectStatus({
         prospectId: str(input, "prospectId"),
         status: str(input, "status"),
+        evidentiaryPosture: str(input, "evidentiaryPosture"),
         closestExistingMatches: str(input, "closestExistingMatches"),
         triageDecision: str(input, "triageDecision"),
         aiTriageConfidence: num(input, "aiTriageConfidence"),
