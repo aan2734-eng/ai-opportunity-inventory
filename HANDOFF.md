@@ -130,3 +130,20 @@ npm run dev
 Mock mode: without `APPS_SCRIPT_URL`, data comes from
 `data/opportunities.sample.json`, the roster accepts `test@example.com` (or
 set `DEV_ROSTER`), and writes go to in-memory arrays.
+
+## 8. Tests
+
+```bash
+npm test   # no extra dependencies; Node's built-in runner
+```
+
+Covers the editorial submission path — the only place the project writes to an
+outside system. `tests/wordpressDraft.test.ts` runs `appsscript/Code.gs`
+against fake Apps Script services (`tests/helpers/appsScriptHarness.ts`) and
+pins down the request `createWordPressDraft_` sends: the `wp/v2/posts`
+endpoint, the Basic auth header, the `{title, content, status: "draft"}` body,
+and what happens when WordPress rejects the draft.
+`tests/submitForHumanReview.test.ts` covers the site half — the
+`submit_for_human_review` tool and the Apps Script client — including that the
+submitter's name and school come from the verified session rather than from
+the model's arguments. No test makes a network call.
