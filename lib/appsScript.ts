@@ -74,6 +74,8 @@ export interface CreateProspectParams {
   oneSentenceClaim: string;
   domain: string;
   jurisdiction: string;
+  /** Tracker Deployment Stage vocabulary; see EVIDENTIARY_POSTURES. */
+  evidentiaryPosture: string;
   sourceLinks: string;
 }
 
@@ -84,6 +86,7 @@ export async function createProspect(params: CreateProspectParams): Promise<{ pr
 export interface UpdateProspectStatusParams {
   prospectId: string;
   status: string;
+  evidentiaryPosture: string;
   closestExistingMatches: string;
   triageDecision: string;
   aiTriageConfidence: number;

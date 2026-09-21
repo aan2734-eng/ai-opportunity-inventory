@@ -57,6 +57,11 @@ original workflow actions plus `listOpportunities` and `checkRoster`).
 Notes:
 - The Prospects / Assignments / Reviews tabs are created automatically on
   first write, with headers.
+- **If a Prospects tab already exists**, add one header cell reading
+  `evidentiaryPosture` in the first empty column to the right of `notes`.
+  Writes and reads are positional against `PROSPECT_HEADERS`, so the data
+  lands correctly either way — the header cell is only so the column is
+  legible to a human reading the sheet. Existing rows stay blank in it.
 - **Membership = a row on the interest-form responses sheet.** To remove
   someone's access, delete their row (their session cookie also expires after
   30 days). To add someone manually, add a row with at least their email.

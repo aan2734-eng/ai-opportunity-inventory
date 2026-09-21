@@ -31,6 +31,10 @@ var PROSPECT_HEADERS = [
   "opportunityTitle", "oneSentenceClaim", "domain", "jurisdiction", "sourceLinks",
   "status", "closestExistingMatches", "triageDecision", "aiTriageConfidence",
   "assignedMemoType", "requestedChangeOrDirection", "notes",
+  // Appended, never inserted: readRows_ maps positionally against this array,
+  // so inserting a name mid-list would shift every later column on a Prospects
+  // tab that already exists. New fields go on the end.
+  "evidentiaryPosture",
 ];
 
 var ASSIGNMENT_HEADERS = [
@@ -220,6 +224,7 @@ function updateProspectStatus_(body) {
     if (String(values[r][0]) === String(body.prospectId)) {
       var updates = {
         status: body.status,
+        evidentiaryPosture: body.evidentiaryPosture,
         closestExistingMatches: body.closestExistingMatches,
         triageDecision: body.triageDecision,
         aiTriageConfidence: body.aiTriageConfidence,
