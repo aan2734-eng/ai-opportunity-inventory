@@ -29,14 +29,16 @@ const MEMBER_STARTERS = [
   "How does my memo get reviewed and published?",
 ];
 
-/** Minimal, safe markdown-ish rendering: escape HTML, then bold/links/lists. */
+/** Minimal, safe markdown-ish rendering: escape HTML, then bold/italics/links/headings/lists. */
 function renderMarkdown(text: string): string {
   const escaped = text
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;"); // a quote inside a URL must not be able to close href="…"
   const withInline = escaped
     .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+    .replace(/\*(?!\s)([^*\n]*?[^\s*])\*/g, "<em>$1</em>")
     .replace(/`([^`]+)`/g, "<code>$1</code>")
     .replace(
       /\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g,
@@ -67,20 +69,26 @@ function renderMarkdown(text: string): string {
 
   for (const line of lines) {
     const trimmed = line.trim();
+    const heading = trimmed.match(/^#{1,6}\s+(.*)/);
     const bullet = trimmed.match(/^[-*]\s+(.*)/);
-    const numbered = trimmed.match(/^\d+[.)]\s+(.*)/);
-    if (bullet || numbered) {
+    const numbered = trimmed.match(/^(\d+)[.)]\s+(.*)/);
+    if (heading) {
+      flushParagraph();
+      closeList();
+      html.push(`<p><strong>${heading[1]}</strong></p>`);
+    } else if (bullet || numbered) {
       flushParagraph();
       const kind = bullet ? "ul" : "ol";
       if (list !== kind) {
         closeList();
-        html.push(`<${kind}>`);
+        // Keep the author's number, so a lone "10. Open Questions" doesn't render as "1."
+        html.push(numbered ? `<ol start="${numbered[1]}">` : "<ul>");
         list = kind;
       }
-      html.push(`<li>${(bullet || numbered)![1]}</li>`);
+      html.push(`<li>${bullet ? bullet[1] : numbered![2]}</li>`);
     } else if (!trimmed) {
+      // A blank line ends a paragraph but not a list, so "1. a\n\n2. b" stays one list.
       flushParagraph();
-      closeList();
     } else {
       closeList();
       paragraph.push(trimmed);
@@ -348,9 +356,10 @@ export function Assistant() {
             {messages.map((message, i) => (
               <div key={i}>
                 {message.role === "user" ? (
-                  <div className="ml-auto max-w-[85%] w-fit border border-rule bg-accent-wash px-4 py-3 text-sm leading-relaxed">
-                    {message.content}
-                  </div>
+                  <div
+                    className="chat-prose ml-auto max-w-[85%] w-fit border border-rule bg-accent-wash px-4 py-3 text-sm leading-relaxed"
+                    dangerouslySetInnerHTML={{ __html: renderMarkdown(message.content) }}
+                  />
                 ) : (
                   <div className="max-w-[95%]">
                     {message.tools && message.tools.length > 0 ? (
