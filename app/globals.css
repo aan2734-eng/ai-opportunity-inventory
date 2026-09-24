@@ -92,9 +92,10 @@ body {
 }
 
 /* Simple markdown-ish rendering inside chat bubbles */
+.chat-prose { overflow-wrap: anywhere; } /* long source URLs wrap instead of overflowing the bubble */
 .chat-prose p { margin: 0.5rem 0; }
-.chat-prose p:first-child { margin-top: 0; }
-.chat-prose p:last-child { margin-bottom: 0; }
+.chat-prose > :first-child { margin-top: 0; }
+.chat-prose > :last-child { margin-bottom: 0; }
 .chat-prose ul, .chat-prose ol { margin: 0.5rem 0 0.5rem 1.25rem; }
 .chat-prose ul { list-style: disc; }
 .chat-prose ol { list-style: decimal; }
