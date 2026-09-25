@@ -23,7 +23,7 @@ const PUBLIC_STARTERS = [
 ];
 
 const MEMBER_STARTERS = [
-  "I have an idea for a new entry — help me figure out if it's worth writing up.",
+  "I have an idea for a new entry—help me figure out if it's worth writing up (11-section format).",
   "What does writing a research memo involve, start to finish?",
   "I have a draft going — how do I get your feedback on it?",
   "How does my memo get reviewed and published?",
