@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { INTEREST_FORM_URL, SUBSTACK_URL, UT_INVENTORY_URL } from "@/lib/config";
-import { getOpportunities, uniqueValues } from "@/lib/inventory";
+import { getOpportunitiesForPage, uniqueValues } from "@/lib/inventory";
 import { STUDENT_PATH } from "@/lib/studentPath";
 
 export const revalidate = 900;
@@ -30,15 +30,11 @@ const STEPS = [
 
 
 export default async function Home() {
-  let count = 0;
-  let domains = 0;
-  try {
-    const opps = await getOpportunities();
-    count = opps.length;
-    domains = uniqueValues(opps, "domain").length;
-  } catch {
-    /* stats are decorative; render without them */
-  }
+  // null if the backend was down during the build; the stats are decorative,
+  // so render without them.
+  const opps = await getOpportunitiesForPage();
+  const count = opps?.length ?? 0;
+  const domains = opps ? uniqueValues(opps, "domain").length : 0;
 
   return (
     <div>
