@@ -24,6 +24,12 @@ export function SiteHeader() {
           >
             Assistant
           </Link>
+          <Link
+            href="https://oppinventory.blog/"
+            className="label px-2.5 py-2 text-ink-soft hover:text-accent transition-colors"
+          >
+            Memos
+          </Link>
           <a
             href={INTEREST_FORM_URL}
             target="_blank"
