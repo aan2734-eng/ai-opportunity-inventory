@@ -87,6 +87,14 @@ Until `APPS_SCRIPT_URL`/`APPS_SCRIPT_SECRET` are set, the deployed site runs
 against bundled **sample data** (a snapshot of the real bank) and a dev roster
 — fine for previewing, not for launch.
 
+The home page and `/inventory` are cached so visitors never wait on Google
+Sheets: each deploy builds them, and after that they're refreshed in the
+background at most every 15 minutes, on the first visit after that window. A
+new row in the public-view sheet therefore shows up after the next refresh,
+not instantly. If the backend fails during a refresh, the last good version
+stays up. If it's unreachable during a deploy, the deploy still succeeds and
+`/inventory` shows a "momentarily unreachable" note until a refresh succeeds.
+
 ## 4. Substack
 
 Create the publication, then set `NEXT_PUBLIC_SUBSTACK_URL` and redeploy. The
@@ -146,4 +154,7 @@ and what happens when WordPress rejects the draft.
 `tests/submitForHumanReview.test.ts` covers the site half — the
 `submit_for_human_review` tool and the Apps Script client — including that the
 submitter's name and school come from the verified session rather than from
-the model's arguments. No test makes a network call.
+the model's arguments. `tests/inventoryPages.test.ts` covers how the home and
+inventory pages read the bank (§3): the request stays cacheable so the pages
+can be prerendered, and a backend failure keeps the last good page, or during
+a build renders the fallback. No test makes a network call.
