@@ -414,7 +414,7 @@ export function Assistant() {
                 ? "Tell me your idea, paste a draft, or ask anything…"
                 : "Ask about any project here, or how to get involved…"
             }
-            className="flex-1 resize-none border border-rule bg-paper-raised px-3.5 py-3 text-sm leading-relaxed outline-none transition-colors placeholder:text-ink-faint focus:border-accent"
+            className="flex-1 border border-rule bg-paper-raised px-3.5 py-3 text-sm leading-relaxed outline-none transition-colors placeholder:text-ink-faint focus:border-accent"
           />
           <button
             type="submit"
