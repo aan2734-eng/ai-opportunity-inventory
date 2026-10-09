@@ -19,7 +19,11 @@ interface BackendResponse<T> {
   error?: string;
 }
 
-async function call<T>(action: string, params: Record<string, unknown> = {}): Promise<T> {
+async function call<T>(
+  action: string,
+  params: Record<string, unknown> = {},
+  cache: RequestCache = "no-store",
+): Promise<T> {
   if (!backendConfigured) {
     return mockCall<T>(action, params);
   }
@@ -28,8 +32,9 @@ async function call<T>(action: string, params: Record<string, unknown> = {}): Pr
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ secret: APPS_SCRIPT_SECRET, action, ...params }),
     // Apps Script /exec answers via a 302 to a one-time content URL; fetch
-    // follows it by default. Never cache backend responses.
-    cache: "no-store",
+    // follows it by default. Never cache backend responses; listOpportunities
+    // is the one read that passes Next's default mode instead (see there).
+    cache,
   });
   if (!res.ok) {
     throw new Error(`Backend request failed (${res.status})`);
@@ -46,7 +51,12 @@ async function call<T>(action: string, params: Record<string, unknown> = {}): Pr
 // ---------------------------------------------------------------------------
 
 export async function listOpportunities(): Promise<Opportunity[]> {
-  return call<Opportunity[]>("listOpportunities");
+  // Not "no-store": a no-store fetch forces every page that shows the bank to
+  // be rendered on each visit, waiting on Apps Script. With Next's default
+  // mode those pages are prerendered and refreshed in the background on their
+  // `revalidate` schedule, and each refresh still fetches fresh — the response
+  // isn't kept in Next's data cache outside the build.
+  return call<Opportunity[]>("listOpportunities", {}, "default");
 }
 
 export async function checkRoster(email: string): Promise<RosterEntry> {

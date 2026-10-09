@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { getOpportunities, uniqueValues } from "@/lib/inventory";
+import { getOpportunitiesForPage, uniqueValues } from "@/lib/inventory";
 import { InventoryBrowser } from "@/components/InventoryBrowser";
 import { UT_INVENTORY_URL } from "@/lib/config";
 
@@ -12,13 +12,9 @@ export const metadata: Metadata = {
 };
 
 export default async function InventoryPage() {
-  let opportunities: Awaited<ReturnType<typeof getOpportunities>> = [];
-  let loadError = false;
-  try {
-    opportunities = await getOpportunities();
-  } catch {
-    loadError = true;
-  }
+  // null only if the backend was down during the build.
+  const opportunities = await getOpportunitiesForPage();
+  const loadError = opportunities === null;
 
   return (
     <div className="mx-auto w-full max-w-6xl px-5 py-12 sm:py-16">
@@ -46,7 +42,7 @@ export default async function InventoryPage() {
         <div className="mt-12 border border-rule bg-paper-sunken p-8 text-center">
           <p className="font-serif text-2xl">The bank is momentarily unreachable.</p>
           <p className="mt-2 text-sm text-ink-soft">
-            Please refresh in a minute — the underlying database did not respond.
+            Please check back in a little while — the underlying database did not respond.
           </p>
         </div>
       ) : (
