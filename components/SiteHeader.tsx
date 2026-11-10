@@ -25,6 +25,12 @@ export function SiteHeader() {
             Assistant
           </Link>
           <Link
+            href="https://drive.google.com/drive/u/0/folders/1Br_7aKp0XkJpkdwQ_uPMBx9b1MjPhrF4"
+            className="label px-2.5 py-2 text-ink-soft hover:text-accent transition-colors"
+          >
+            Resources
+          </Link>
+          <Link
             href="https://oppinventory.blog/"
             className="label px-2.5 py-2 text-ink-soft hover:text-accent transition-colors"
           >
